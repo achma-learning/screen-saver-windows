@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Demo Screensaver</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #05070d; height: 100%; }
+  canvas { display: block; }
+  #clock {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Segoe UI', sans-serif; font-weight: 200; font-size: 8vw;
+    color: rgba(255,255,255,0.85); letter-spacing: 4px; pointer-events: none;
+    text-shadow: 0 0 40px rgba(120,180,255,0.5);
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="clock"></div>
+<script>
+// Simple animated starfield (WebGL-free, pure Canvas2D -- keeps the demo
+// dependency-free) plus a live clock, just to prove HTML/CSS/JS/Canvas
+// all render correctly full-screen.
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+
+const stars = Array.from({length: 300}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  z: Math.random() * canvas.width,
+}));
+
+function frame() {
+  ctx.fillStyle = 'rgba(5,7,13,0.4)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  ctx.fillStyle = '#fff';
+  for (const s of stars) {
+    s.z -= 4;
+    if (s.z <= 0) { s.x = Math.random() * canvas.width; s.y = Math.random() * canvas.height; s.z = canvas.width; }
+    const k = 128 / s.z;
+    const px = (s.x - cx) * k + cx;
+    const py = (s.y - cy) * k + cy;
+    const size = (1 - s.z / canvas.width) * 3;
+    if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
+      ctx.beginPath();
+      ctx.arc(px, py, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+
+function tick() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
